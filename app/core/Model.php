@@ -99,14 +99,18 @@ class Model
     public function delete(array $data, array $data_not = [])
     {
         $result = $this->orWhere($data, $data_not);
-        $str = '';
+
+        $ids = [];
         if ($result) {
             show($result);
             foreach ($result as $val) {
-                $str = $val->id . ', ';
+                $ids[] = $val->id;
             }
-            $query = "DELETE FROM `{$this->table}` WHERE id IN (:id)";
-            $this->run($query, )
+            $placeHolder = rtrim(str_repeat('?, ', count($ids)), ', ');
+
+            $query = "DELETE FROM `{$this->table}` WHERE id IN ({$placeHolder})";
+            show($query);
+            $this->run($query, $ids);
         }
     }
 }
