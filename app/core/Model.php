@@ -1,35 +1,23 @@
 <?php
-
-class Model
+trait Model
 {
     use Database;
 
-    protected $table = 'users';
     protected $limit = 10;
     protected $offset = 0;
+    protected $order_type = 'desc';
+    protected $order_column = 'id';
+    protected $table = '';
 
-    public function first(array $data, array $data_not = [])
+    public function findAll()
     {
-        $keys = array_keys($data);
-        $keys_not = array_keys($data_not);
+        $query = "SELECT * FROM `{$this->table}` ORDER BY {$this->order_column} {$this->order_type} LIMIT {$this->limit} OFFSET {$this->offset}";
 
-        $query = "SELECT * FROM `{$this->table}` WHERE ";
-
-        foreach ($keys as $key) {
-            $query .= $key . '= :' . $key . ' && ';
+        $result = $this->query($query);
+        if ($result) {
+            return $result;
         }
-
-        foreach ($keys_not as $key) {
-            $query .= $key . '!= :' . $key . ' && ';
-        }
-
-        $query = trim($query, ' && ');
-
-        $query .= " limit {$this->limit} offset {$this->offset}";
-
-        $data = array_merge($data, $data_not);
-
-        return $this->run($query, $data);
+        return false;
     }
 
     public function where(array $data, array $data_not = [])
@@ -49,68 +37,47 @@ class Model
 
         $query = trim($query, ' && ');
 
-        $query .= " limit {$this->limit} offset {$this->offset}";
+        $query .= " ORDER BY {$this->order_column} {$this->order_type} LIMIT {$this->limit} OFFSET {$this->offset}";
 
         $data = array_merge($data, $data_not);
 
-        return $this->run($query, $data);
-    }
-
-    public function orWhere(array $data, array $data_not = [])
-    {
-        $keys = array_keys($data);
-        $keys_not = array_keys($data_not);
-
-        $query = "SELECT * FROM `{$this->table}` WHERE ";
-
-        foreach ($keys as $key) {
-            $query .= $key . '= :' . $key . ' OR ';
-        }
-
-        foreach ($keys_not as $key) {
-            $query .= $key . '!= :' . $key . ' OR ';
-        }
-
-        $query = trim($query, ' OR ');
-
-        $query .= " limit {$this->limit} offset {$this->offset}";
-
-        $data = array_merge($data, $data_not);
-
-        return $this->run($query, $data);
-    }
-
-    public function create($data)
-    {
-        $keys = array_keys($data);
-        show($keys);
-        $query = "INSERT INTO `{$this->table}` ( " . implode(',', $keys) . " ) VALUES ( :" . implode(', :', $keys) . " )";
-
-        return $this->run($query, $data);
-    }
-
-    public function update($id, $data)
-    {
-        $query = "SELECT * FROM `users`";
-        $users = $this->query($query);
-        return $users;
-    }
-
-    public function delete(array $data, array $data_not = [])
-    {
-        $result = $this->orWhere($data, $data_not);
-
-        $ids = [];
+        $result = $this->query($query, $data);
         if ($result) {
-            show($result);
-            foreach ($result as $val) {
-                $ids[] = $val->id;
-            }
-            $placeHolder = rtrim(str_repeat('?, ', count($ids)), ', ');
-
-            $query = "DELETE FROM `{$this->table}` WHERE id IN ({$placeHolder})";
-            show($query);
-            $this->run($query, $ids);
+            return $result;
         }
+        return false;
+    }
+
+    public function insert($data)
+    {
+        $keys = array_keys($data);
+
+        $query = "INSERT INTO `{$this->table}` ( " . implode(',', $keys) . " ) VALUES ( :" . implode(', :', $keys) . " )";
+        $result = $this->query($query, $data);
+        if ($result) {
+            return $result;
+        }
+        return false;
+    }
+
+    public function update($id, $data, $id_column = 'id')
+    {
+        $keys = array_keys($data);
+        $query = "UPDATE {$this->table} SET ";
+        foreach ($keys as $key) {
+            $query .= $key . ' = :' . $key . ', ';
+        }
+        $query = trim($query, ', ');
+        $query .= " WHERE $id_column = :$id_column";
+        $data[$id_column] = $id;
+
+        $this->query($query, $data);
+    }
+
+    public function delete($id, $data, $id_column = 'id')
+    {
+        $data[$id_column] = $id;
+        $query = "DELETE FROM `{$this->table}` WHERE $id_column = :$id_column";
+        $this->query($query, $data);
     }
 }

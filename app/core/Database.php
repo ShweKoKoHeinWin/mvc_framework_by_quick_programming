@@ -26,7 +26,7 @@ trait Database
         return false;
     }
 
-    public function get($query, $data = [])
+    public function get_row($query, $data = [])
     {
         $con = $this->connect();
 
@@ -35,18 +35,20 @@ trait Database
         if ($check) {
             $result = $stm->fetchAll(PDO::FETCH_OBJ);
             if (is_array($result) && count($result)) {
-                return $result;
+                return $result[0];
             }
         }
         return false;
     }
 
-    public function run($query, $data)
-    {
-        $result = $this->query($query, $data);
-        if ($result) {
-            return $result;
-        }
-        return false;
-    }
+
+
+    // public function run($query, $data)
+    // {
+    // $result = $this->query($query, $data);
+    // if ($result) {
+    //     return $result;
+    // }
+    // return false;
+    // }
 }
