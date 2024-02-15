@@ -1,12 +1,25 @@
 <?php
 
-class Model
+trait Model
 {
     use Database;
 
     protected $table = 'users';
     protected $limit = 10;
+    protected $order_type = 'ASC';
+    protected $order_column = 'id';
     protected $offset = 0;
+
+    public function __construct()
+    {
+        $this->table =  strtolower(pluralize(__CLASS__));
+    }
+
+    public function all()
+    {
+        $query = "SELECT * FROM `{$this->table}` ORDER BY {$this->order_column} {$this->order_type} LIMIT {$this->limit} OFFSET {$this->offset}";
+        return $this->query($query);
+    }
 
     public function first(array $data, array $data_not = [])
     {
@@ -25,11 +38,11 @@ class Model
 
         $query = trim($query, ' && ');
 
-        $query .= " limit {$this->limit} offset {$this->offset}";
+        $query .= " ORDER BY {$this->order_column} {$this->order_type} LIMIT {$this->limit} OFFSET {$this->offset}";
 
         $data = array_merge($data, $data_not);
 
-        return $this->run($query, $data);
+        return $this->run($query, $data)[0];
     }
 
     public function where(array $data, array $data_not = [])
@@ -49,7 +62,7 @@ class Model
 
         $query = trim($query, ' && ');
 
-        $query .= " limit {$this->limit} offset {$this->offset}";
+        $query .= " ORDER BY {$this->order_column} {$this->order_type} LIMIT {$this->limit} OFFSET {$this->offset}";
 
         $data = array_merge($data, $data_not);
 
@@ -73,7 +86,7 @@ class Model
 
         $query = trim($query, ' OR ');
 
-        $query .= " limit {$this->limit} offset {$this->offset}";
+        $query .= " ORDER BY {$this->order_column} {$this->order_type} LIMIT {$this->limit} OFFSET {$this->offset}";
 
         $data = array_merge($data, $data_not);
 
@@ -83,7 +96,6 @@ class Model
     public function create($data)
     {
         $keys = array_keys($data);
-        show($keys);
         $query = "INSERT INTO `{$this->table}` ( " . implode(',', $keys) . " ) VALUES ( :" . implode(', :', $keys) . " )";
 
         return $this->run($query, $data);
@@ -102,14 +114,12 @@ class Model
 
         $ids = [];
         if ($result) {
-            show($result);
             foreach ($result as $val) {
                 $ids[] = $val->id;
             }
             $placeHolder = rtrim(str_repeat('?, ', count($ids)), ', ');
 
             $query = "DELETE FROM `{$this->table}` WHERE id IN ({$placeHolder})";
-            show($query);
             $this->run($query, $ids);
         }
     }

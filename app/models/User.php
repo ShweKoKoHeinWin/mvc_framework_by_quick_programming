@@ -1,8 +1,6 @@
 <?php
 
-class User extends Model
+class User
 {
-    public function show()
-    {
-    }
+    use Model;
 }

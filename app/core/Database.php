@@ -13,10 +13,8 @@ trait Database
     {
         $con = $this->connect();
 
-        $stm = $con->prepare($query);
-        show($stm);
+        $stm = $con->prepare($query);;
         $check = $stm->execute($data);
-        show($data);
         if ($check) {
             $result = $stm->fetchAll(PDO::FETCH_OBJ);
             if (is_array($result) && count($result)) {
