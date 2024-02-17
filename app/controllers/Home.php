@@ -1,13 +1,14 @@
 <?php
 
-class Home extends Controller
+class Home
 {
-    public function index($name)
+    use Controller;
+    public function index($name, $h, $i)
     {
         $model = new User;
 
-        $model = new School;
-
+        show($name);
+        show($h);
         // show($model->insert(['name' => 'Mg Aye', 'age' => 11]));
         // show($model->insert(['name' => 'Mg Aye', 'age' => 11]));
         // show($model->insert(['name' => 'Mg One', 'age' => 11]));
@@ -33,5 +34,12 @@ class Home extends Controller
         // show($model->insert(['name' => 'Mg Aye', 'age' => 11]));
 
         $this->view('page');
+    }
+
+    public function show($h, $i)
+    {
+        show('showww');
+        show($h);
+        show($i);
     }
 }

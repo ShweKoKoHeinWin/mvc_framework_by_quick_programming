@@ -7,7 +7,6 @@ trait Model
     protected $offset = 0;
     protected $order_type = 'desc';
     protected $order_column = 'id';
-    protected $table = '';
 
     public function findAll()
     {
@@ -50,6 +49,14 @@ trait Model
 
     public function insert($data)
     {
+        // Removed Unallow Columns
+        if (!empty($this->allowedColumns)) {
+            foreach ($data as $key => $value) {
+                if (!in_array($key, $this->allowedColumns)) {
+                    unset($data[$key]);
+                }
+            }
+        }
         $keys = array_keys($data);
 
         $query = "INSERT INTO `{$this->table}` ( " . implode(',', $keys) . " ) VALUES ( :" . implode(', :', $keys) . " )";
@@ -62,6 +69,14 @@ trait Model
 
     public function update($id, $data, $id_column = 'id')
     {
+        // Removed Unallow Columns
+        if (!empty($this->allowedColumns)) {
+            foreach ($data as $key => $value) {
+                if (!in_array($key, $this->allowedColumns)) {
+                    unset($data[$key]);
+                }
+            }
+        }
         $keys = array_keys($data);
         $query = "UPDATE {$this->table} SET ";
         foreach ($keys as $key) {
