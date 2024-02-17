@@ -7,6 +7,7 @@ trait Model
     protected $offset = 0;
     protected $order_type = 'desc';
     protected $order_column = 'id';
+    public $errors = [];
 
     public function findAll()
     {
@@ -46,6 +47,35 @@ trait Model
         }
         return false;
     }
+
+    public function first(array $data, array $data_not = [])
+    {
+        $keys = array_keys($data);
+        $keys_not = array_keys($data_not);
+
+        $query = "SELECT * FROM `{$this->table}` WHERE ";
+
+        foreach ($keys as $key) {
+            $query .= $key . '= :' . $key . ' && ';
+        }
+
+        foreach ($keys_not as $key) {
+            $query .= $key . '!= :' . $key . ' && ';
+        }
+
+        $query = trim($query, ' && ');
+
+        $query .= " ORDER BY {$this->order_column} {$this->order_type} LIMIT {$this->limit} OFFSET {$this->offset}";
+
+        $data = array_merge($data, $data_not);
+
+        $result = $this->query($query, $data);
+        if ($result) {
+            return $result[0];
+        }
+        return false;
+    }
+
 
     public function insert($data)
     {
