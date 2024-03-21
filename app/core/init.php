@@ -1,7 +1,10 @@
 <?php
 
+defined('ROOTPATH') or exit("Access Denied.");
+
 spl_autoload_register(function ($className) {
-    require "../app/models/{$className}.php";
+    show($className);
+    require "../app/models/" . ucfirst($className) . ".php";
 });
 
 require 'config.php';
@@ -10,3 +13,7 @@ require 'Database.php';
 require 'Model.php';
 require 'Controller.php';
 require 'App.php';
+require 'Session.php';
+require 'Request.php';
+require 'Pager.php';
+require 'Image.php';

@@ -1,8 +1,10 @@
 <?php
 
+namespace Model;
+
 class User
 {
-    use Model;
+    use \Core\Model;
     protected $table = 'users';
     protected $allowedColumns = [
         'name',

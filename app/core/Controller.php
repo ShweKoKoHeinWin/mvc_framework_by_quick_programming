@@ -1,5 +1,9 @@
 <?php
 
+namespace Core;
+
+defined('ROOTPATH') or exit("Access Denied.");
+
 trait Controller
 {
     public function view($name, $data = [])

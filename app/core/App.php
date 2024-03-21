@@ -1,8 +1,12 @@
 <?php
 
+namespace Core;
+
+defined('ROOTPATH') or exit("Access Denied.");
+
 class App
 {
-    private $controller = 'Home';
+    private $controller = ' \Controllers\Home';
     private $method = 'index';
 
     private function splitURl()
@@ -15,17 +19,17 @@ class App
     public function loadController()
     {
         $URL = $this->splitURl();
-
+        show(ucfirst($URL[0]));
         $filename = "../app/controllers/" . ucfirst($URL[0]) . '.php';
         $error404 = "../app/controllers/_404.php";
         if (file_exists($filename)) {
             require $filename;
-            $this->controller = ucfirst($URL[0]);
+            $this->controller = $this->controller = "\\Controllers\\" .  ucfirst($URL[0]);
             unset($URL[0]);
         } else {
             // echo "controller not found";
             require $error404;
-            $this->controller = '_404';
+            $this->controller = "\\Controllers\\" . '_404';
         }
 
         $controller = new $this->controller;

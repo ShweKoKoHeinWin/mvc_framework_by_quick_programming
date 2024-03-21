@@ -1,11 +1,15 @@
 <?php
 
+namespace Core;
+
+defined('ROOTPATH') or exit("Access Denied.");
+
 trait Database
 {
     private function connect()
     {
         $string = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME;
-        $con = new PDO($string, DB_USER, DB_PASSWORD);
+        $con = new \PDO($string, DB_USER, DB_PASSWORD);
         return $con;
     }
 
@@ -16,7 +20,7 @@ trait Database
         $stm = $con->prepare($query);
         $check = $stm->execute($data);
         if ($check) {
-            $result = $stm->fetchAll(PDO::FETCH_OBJ);
+            $result = $stm->fetchAll(\PDO::FETCH_OBJ);
             if (is_array($result) && count($result)) {
                 return $result;
             }
@@ -31,7 +35,7 @@ trait Database
         $stm = $con->prepare($query);
         $check = $stm->execute($data);
         if ($check) {
-            $result = $stm->fetchAll(PDO::FETCH_OBJ);
+            $result = $stm->fetchAll(\PDO::FETCH_OBJ);
             if (is_array($result) && count($result)) {
                 return $result[0];
             }

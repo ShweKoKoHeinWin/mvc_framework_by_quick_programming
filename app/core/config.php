@@ -1,5 +1,7 @@
 <?php
 
+defined('ROOTPATH') or exit("Access Denied.");
+
 if ($_SERVER['SERVER_NAME'] == 'localhost') {
 
     // Database Config

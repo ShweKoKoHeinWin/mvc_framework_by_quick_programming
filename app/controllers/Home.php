@@ -1,8 +1,11 @@
 <?php
 
+namespace Controllers;
+
+defined('ROOTPATH') or exit("Access Denied.");
 class Home
 {
-    use Controller;
+    use \Core\Controller;
     public function index()
     {
         if (empty($_SESSION['USER'])) {
