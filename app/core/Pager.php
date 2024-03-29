@@ -14,9 +14,26 @@ class Pager
     public $end = 1;
     public $limit = 10;
     public $nav_class = "";
+    public $nav_style = "";
     public $ul_class = 'pagination justify-content-center';
+    public $ul_style = '';
     public $li_class = 'page-item';
+    public $li_style = '';
     public $a_class = 'page-link';
+    public $a_style = '';
+
+    public $first_a_class = "page-link";
+    public $first_a_styles = "";
+    public $first_li_class = "page-item";
+    public $first_li_styles = "";
+
+    public $next_a_class = "page-link";
+    public $next_a_styles = "";
+    public $next_li_class = "page-item";
+    public $next_li_styles = "";
+
+    public $active_class = "active";
+    public $active_styles = '';
 
     public function __construct($limit = 10, $extras = 1)
     {
@@ -39,7 +56,7 @@ class Pager
         }
 
         $first_link = preg_replace('/page=[0-9]+/', "page=1", $current_link);
-        $next_link = preg_replace('/page=[0-9]+/', "page=" . ($page_number + $extras + 1), $current_link);
+        $next_link = preg_replace('/page=[0-9]+/', "page=" . ($page_number + $extras), $current_link);
 
         $this->links['first'] = $first_link;
         $this->links['current'] = $current_link;
@@ -56,22 +73,22 @@ class Pager
 ?>
             <br class="clearfix">
             <div>
-                <nav class="<?= $this->nav_class ?>">
-                    <ul class="<?= $this->ul_class ?>">
-                        <li class="<?= $this->li_class ?>">
-                            <a class="<?= $this->a_class ?>" href="<?= $this->links['first'] ?>">First</a>
+                <nav class="<?= $this->nav_class ?>" style="<?= $this->nav_class ?>">
+                    <ul class="<?= $this->ul_class ?>" style="<?= $this->ul_style ?>">
+                        <li class="<?= $this->first_li_class ?>" style="<?= $this->first_li_class ?>">
+                            <a class="<?= $this->first_a_class ?>" href="<?= $this->links['first'] ?>" style="<?= $this->first_a_styles ?>">First</a>
                         </li>
 
                         <?php for ($x = $this->start; $x <= $this->end; $x++) : ?>
-                            <li class="<?= $this->li_class ?> <?= ($x == $this->page_number) ? ' active ' : '' ?>">
-                                <a class="<?= $this->a_class ?>" href="<?= preg_replace('/page=[0-9]+/', "page=" . $x, $this->links['current']) ?>">
+                            <li class="<?= $this->li_class ?> <?= ($x == $this->page_number) ? ' active ' : '' ?> <?= ($x == $this->page_number) ? $this->active_class : ''; ?>" style="<?= $this->li_style ?>; <?= ($x == $this->page_number) ? $this->active_styles : ''; ?>">
+                                <a class="<?= $this->a_class ?>" href="<?= preg_replace('/page=[0-9]+/', "page=" . $x, $this->links['current']) ?>" style="<?= $this->a_style ?>">
                                     <?= $x ?>
                                 </a>
                             </li>
                         <?php endfor; ?>
 
-                        <li class="<?= $this->li_class ?>">
-                            <a class="<?= $this->a_class ?>" href="<?= $this->links['next'] ?>">Next</a>
+                        <li class="<?= $this->next_li_class ?>" style="<?= $this->next_li_styles ?>">
+                            <a class="<?= $this->next_a_class ?>" href="<?= $this->links['next'] ?>" style="<?= $this->next_a_styles ?>">Next</a>
                         </li>
                     </ul>
                 </nav>

@@ -1,5 +1,7 @@
 <?php
 
+namespace Core;
+
 defined('ROOTPATH') or exit("Access Denied.");
 
 trait Model
@@ -127,5 +129,111 @@ trait Model
         $data[$id_column] = $id;
         $query = "DELETE FROM `{$this->table}` WHERE $id_column = :$id_column";
         $this->query($query, $data);
+    }
+
+    public function validate($data)
+    {
+        $this->errors = [];
+
+        if (!empty($this->validationRules)) {
+            foreach ($this->validationRules as $col => $rules) {
+                $rules = array_reverse($rules);
+                foreach ($rules as $rule) {
+                    if (!isset($data[$col])) {
+                        continue;
+                    }
+
+                    $value = trim($data[$col]);
+                    $ruleName = $rule;
+
+                    if (preg_match("/^min:[0-9]+$/", $rule)) {
+                        $rule = 'min';
+                    } elseif (preg_match("/^max:[0-9]+$/", $rule)) {
+                        $rule = 'max';
+                    } else {
+                        $rule = $rule; // Use the rule directly if it's not a min/max rule
+                    }
+
+                    switch ($rule) {
+                        case 'required':
+                            if (empty($value))
+                                $this->errors[$col] = "The " . $col . ' is required.';
+                            break;
+
+                        case 'unique':
+                            if ($this->first([$col => $value])) {
+                                $this->errors[$col] = "The " . $col . ' must be unique.';
+                            }
+                            break;
+
+                        case 'email':
+                            if (!filter_var($value, FILTER_VALIDATE_EMAIL))
+                                $this->errors[$col] = "The " . $col . ' must be a validate email.';
+                            break;
+
+                        case 'alpha':
+                            if (!preg_match("/^[a-zA-Z]+$/", $value))
+                                $this->errors[$col] = "The " . $col . ' must be alphabet only.';
+                            break;
+
+                        case 'alpha_space':
+                            if (!preg_match("/^[a-zA-Z ]+$/", $value))
+                                $this->errors[$col] = "The " . $col . ' must be alphabet and spaces only.';
+                            break;
+
+                        case 'alpha_numeric':
+                            if (!preg_match("/^[a-zA-Z0-9]+$/", $value))
+                                $this->errors[$col] = "The " . $col . ' must be alphabet with numbers only.';
+                            break;
+
+                        case 'alpha_symbol':
+                            if (!preg_match("/^[a-zA-Z\-\_\%\?\!\[\]\{\}\(\)]+$/", $value))
+                                $this->errors[$col] = "The " . $col . ' must be alphabet with symbols only.';
+                            break;
+
+                        case 'min':
+                            show($rule);
+                            $string_with_number = $ruleName;
+                            $parts = explode(":", $string_with_number);
+                            show($parts);
+                            if (isset($parts[1])) {
+                                $number_part = $parts[1];
+                                if (strlen($value) < $number_part) {
+                                    $this->errors[$col] = "The " . $col . ' must be at least ' . $number_part . ' characters.';
+                                }
+                            } else {
+                                $this->errors[$col] = "Invalid rule format.";
+                            }
+                            break;
+
+                        case 'max':
+                            $string_with_number = $ruleName;
+                            $parts = explode(":", $string_with_number);
+                            $number_part = $parts[1];
+                            if (strlen($value) > $number_part) {
+                                $this->errors[$col] = "The " . $col . ' must no longer than ' . $number_part . ' characters.';
+                            }
+                            break;
+
+                        default:
+                            $this->errors['rules'] = "The Rule " . $rule . ' was not found!';
+                            break;
+                    }
+                }
+            }
+        }
+
+        if (empty($this->errors)) {
+            return true;
+        }
+        return false;
+    }
+
+    public function getError($key)
+    {
+        if (!empty($this->errors[$key])) {
+            return $this->errors[$key];
+        }
+        return '';
     }
 }

@@ -1,0 +1,31 @@
+<?php
+
+use Artisan\Artisan;
+
+if (php_sapi_name() !== 'cli') {
+  die("This tool is only for use in the command line.");
+}
+
+define("DS", DIRECTORY_SEPARATOR);
+define('CPATH', __DIR__ . DS);
+
+chdir(CPATH);
+
+$action = $argv[1] ?? 'help';
+$class_name = $argv[2] ?? '';
+$option = $argv[3] ?? '';
+
+require_once 'app' . DS . 'artisan' . DS . 'init.php';
+$artisan = new \Artisan\Artisan;
+
+if (empty($action)) {
+  call_user_func_array([$artisan, 'help'], []);
+} else {
+  $parts = explode(':', $action);
+  if (is_callable([$artisan, $parts[0]])) {
+    call_user_func_array([$artisan, $parts[0]], [$action, $class_name, $option]);
+  } else {
+    echo "\n{$parts[0]} method is not defined.\n Please Check below to command. \n";
+    call_user_func_array([$artisan, 'help'], []);
+  }
+}

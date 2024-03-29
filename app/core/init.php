@@ -4,7 +4,8 @@ defined('ROOTPATH') or exit("Access Denied.");
 
 spl_autoload_register(function ($className) {
     show($className);
-    require "../app/models/" . ucfirst($className) . ".php";
+    // require "../app/models/" . ucfirst($className) . ".php";
+    require "../app/models/" . ucfirst(explode('\\', trim($className))[1]) . ".php";
 });
 
 require 'config.php';
