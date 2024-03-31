@@ -5,7 +5,6 @@ namespace Artisan;
 
 defined('CPATH') or exit('Accessed Denied.');
 
-
 class Artisan
 {
   public $version = '1.0.0';
@@ -133,6 +132,44 @@ class Artisan
         break;
 
       case 'make:migration':
+        [
+          $class_name, $directory, $file_name, $namespace_parts
+        ] = $this->getFileInfo($class_name, 'migration');
+
+        if (count($option) > 0 && $option['type'] == '--table') {
+          $table_name = $option['name'];
+        } else {
+          $table_name = strtolower($class_name) . 's';
+        }
+
+        if (!preg_match('/^[a-zA-Z_]+/', $class_name)) {
+          die('Class Name is invalid');
+        }
+
+        if (file_exists($file_name)) {
+          die("Model {$file_name} already Existed.");
+        }
+        if (count($namespace_parts) > 0) {
+          $namespace = implode('\\', $namespace_parts) . "\Models";
+        } else {
+          $namespace = 'Models';
+        }
+
+        $sample_file = file_get_contents('app' . DS . 'artisan' . DS . 'samples' . DS . 'migration.php');
+        $sample_file = preg_replace('/\{CLASSNAME\}/', ucfirst($class_name), $sample_file);
+        // $sample_file = preg_replace('/\{TABLENAME\}/', $table_name, $sample_file);
+
+        if ($directory) {
+          if (!file_exists($directory)) {
+            mkdir($directory, 0777, true); // Adjust permissions as needed
+          }
+        }
+
+        if (file_put_contents($file_name, $sample_file)) {
+          die("{$file_name} is successfully created.");
+        } else {
+          die('Something Went Wrong. Please Try Again.');
+        }
 
         break;
 
@@ -172,6 +209,8 @@ class Artisan
 
     switch ($mode) {
       case 'db:create':
+        $d = new \Artisan\Migration;
+        $d->dropTable('users');
         die($mode);
         break;
 
@@ -182,6 +221,92 @@ class Artisan
       case 'db:table':
 
         break;
+    }
+  }
+
+  public function migrate($mode, $option = "")
+  {
+    echo $option;
+    $single_file = '';
+    $directory = "app" . DS . "migration" . DS;
+    $pattern = '/([a-zA-Z_]+)\.php$/';
+    if (!empty($option)) {
+      if (preg_match('/^--[a-z]+/', $option)) {
+        if (preg_match('/^--file=+/', $option)) {
+          $parts = explode('=', $option);
+          $single_file = $parts[1];
+        }
+      } else {
+        die('INvalid Options');
+      }
+
+      switch ($mode) {
+        case 'migrate':
+          $file_full_name = $directory . $single_file;
+          if (file_exists($file_full_name)) {
+            if (preg_match($pattern, $single_file, $matches)) {
+              require_once $file_full_name;
+              $class = ucfirst(trim($matches[1], '_'));
+              $migration = new ("\\Migration\\" . $class);
+              $migration->up();
+            } else {
+              echo 'No match found.';
+            }
+          } else {
+            die('File Not found.');
+          }
+
+          break;
+
+        case 'migrate:rollback':
+          $file_full_name = $directory . $single_file;
+          if (file_exists($file_full_name)) {
+            if (preg_match($pattern, $single_file, $matches)) {
+              require_once $file_full_name;
+              $class = ucfirst(trim($matches[1], '_'));
+              $migration = new ("\\Migration\\" . $class);
+              $migration->down();
+            } else {
+              echo 'No match found.';
+            }
+          } else {
+            die('File Not found.');
+          }
+          break;
+
+        default;
+          die('No Migrate Method exist.');
+      }
+    } else {
+      $files = $this->getMigrationFiles() ?? [];
+
+      switch ($mode) {
+        case 'migrate':
+
+          foreach ($files as $file) {
+            $file_path = basename($file);
+
+            $this->migrate("migrate", "--file=$file_path");
+          }
+          break;
+
+        case 'migrate:refresh':
+          foreach ($files as $file) {
+            $file_path = basename($file);
+            $this->migrate("migrate:rollback", "--file=$file_path");
+            $this->migrate("migrate", "--file=$file_path");
+          }
+          break;
+
+        case 'migrate:list':
+
+          echo "Migrations : \n\r";
+          foreach ($files as $file) {
+            $file_path = basename($file);
+            echo "$file_path \n";
+          }
+          break;
+      }
     }
   }
 
@@ -209,26 +334,36 @@ class Artisan
 
   private function getFileInfo($class_name, $type = "")
   {
-    // Check $name has namespaces
-    if (strpos($class_name, '\\') !== false) {
-      $parts = explode('\\', $class_name);
-      $file_name = "app" . DS . $type . DS;
-      $directory = "app" . DS . $type . DS;
-      $namespace_parts = [];
-      foreach ($parts as $key => $part) {
-        if ($key != count($parts) - 1) {
-          $file_name .= $part . DS;
-          $directory .= $part . DS;
-          $namespace_parts[] = ucfirst($part);
-        } else {
-          $file_name .= ucfirst($part) . '.php';
-          $class_name = ucfirst($part);
-        }
+    $file_name = "app" . DS . $type . DS;
+    $directory = "app" . DS . $type . DS;
+    $namespace_parts = [];
+    if ($type == "migration") {
+      $date_part = date("jS_M_Y_H_i_s_");
+      if (strpos($class_name, '\\') !== false || strpos($class_name, '/') !== false) {
+        die('Name is invalid');
+      } else {
+        $file_name = $file_name . $date_part . $class_name . '.php';
       }
     } else {
-      $directory = '';
-      $namespace_parts = [];
-      $file_name = 'app' . DS . $type . DS . ucfirst($class_name) . '.php';
+      // Check $name has namespaces
+      if (strpos($class_name, '\\') !== false) {
+        $parts = explode('\\', $class_name);
+
+        foreach ($parts as $key => $part) {
+          if ($key != count($parts) - 1) {
+            $file_name .= $part . DS;
+            $directory .= $part . DS;
+            $namespace_parts[] = ucfirst($part);
+          } else {
+            $file_name .= ucfirst($part) . '.php';
+            $class_name = ucfirst($part);
+          }
+        }
+      } else {
+        $directory = '';
+        $namespace_parts = [];
+        $file_name = 'app' . DS . $type . DS . ucfirst($class_name) . '.php';
+      }
     }
 
     return [
@@ -237,5 +372,21 @@ class Artisan
       $file_name,
       $namespace_parts
     ];
+  }
+
+  private function getMigrationFiles()
+  {
+    $folder = "app" . DS . 'migration' . DS;
+    if (!file_exists($folder)) {
+      die("No migration files are found.");
+    }
+
+    $files = glob($folder . "*.php");
+    if (empty($files)) {
+      die('No migrations files.');
+      return [];
+    }
+
+    return $files;
   }
 }

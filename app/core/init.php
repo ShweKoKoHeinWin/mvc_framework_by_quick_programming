@@ -18,3 +18,4 @@ require 'Session.php';
 require 'Request.php';
 require 'Pager.php';
 require 'Image.php';
+require '../artisan/Migration.php';

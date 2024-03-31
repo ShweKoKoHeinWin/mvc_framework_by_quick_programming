@@ -2,7 +2,7 @@
 
 defined('ROOTPATH') or exit("Access Denied.");
 
-if ($_SERVER['SERVER_NAME'] == 'localhost') {
+if (isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] == 'localhost') {
 
     // Database Config
     define('DB_NAME', 'quick_programming_mvc');
