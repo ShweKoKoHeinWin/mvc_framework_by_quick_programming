@@ -18,10 +18,11 @@ class Home
         //     $data['username'] = $_SESSION['USER']['name'];
         // }
 
-        $file = 'assets/images/testing.png';
-        $image = new \Core\Image;
-        $data['thumbnail'] = $image->getThumbnail($file, 2000, 100);
-        $data['file'] = $file;
+        // $file = 'assets/images/testing.png';
+        // $image = new \Core\Image;
+        // $data['thumbnail'] = $image->getThumbnail($file, 2000, 100);
+        // $data['file'] = $file;
+        $data = [];
         $this->view('home', $data);
     }
 }

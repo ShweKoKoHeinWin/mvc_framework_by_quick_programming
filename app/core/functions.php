@@ -6,7 +6,7 @@ checkExtension();
 function checkExtension()
 {
     $required_extensions = [
-        'gd',
+        // 'gd',
         'mysqli',
         'pdo_mysql',
         'curl',
