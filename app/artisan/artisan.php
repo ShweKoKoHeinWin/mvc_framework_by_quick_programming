@@ -8,6 +8,21 @@ defined('CPATH') or exit('Accessed Denied.');
 class Artisan
 {
   public $version = '1.0.0';
+  public function serve($mode, $option = "--port=8000") {
+    $port = 8000;
+    if (preg_match('/^--[a-z]+/', $option)) {
+      $parts = explode('=', $option);
+
+      if (!empty($parts)) {
+        $type = $parts[0];
+        $port = $parts[1] ? $parts[1] : 8000;
+      }
+    }
+    echo "Running Project at the port $port \n";
+    exec("php -S localhost:$port -t public");
+    
+  }
+
   public function make($mode, $class_name = "", $option = "")
   {
 
